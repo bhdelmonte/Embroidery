@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 import math
 
 
@@ -9,20 +7,20 @@ def getSquare():
     stitches += [0, 0]  # followed by 8 bit displacement X,Y
     stitches += [206, 206]  # followed by another 8 bit displacement X,Y
     # Note: Displacements are in 0.1mm units. If number is greater than 128, then it represents
-    # a negative distance calculated by subtravcting the number from 256 and multiplying by 0.1mm
+    # a negative distance calculated by subtracting the number from 256 and multiplying by 0.1mm
 
     for i in range(0, 10):
-        stitches += [10, 0, ]  # add ten 1mm stiches going right
+        stitches += [10, 0, ]  # add ten 1mm stitches going right
     for i in range(0, 10):
-        stitches += [0, 10, ]  # add ten 1mm stiches going up
+        stitches += [0, 10, ]  # add ten 1mm stitches going up
 
     # Change thread
     stitches += [128, 1]  # 128 = escape_character -> 1 = Change to next thread in list
 
     for i in range(0, 10):
-        stitches += [246, 0, ]  # add ten 1mm stiches going left
+        stitches += [246, 0, ]  # add ten 1mm stitches going left
     for i in range(0, 10):
-        stitches += [0, 246, ]  # add ten 1mm stiches going down
+        stitches += [0, 246, ]  # add ten 1mm stitches going down
 
     stitches += [128, 16]  # 128 = escape_character , 16=last_stitch
     return stitches
@@ -74,26 +72,21 @@ def getEllipse(a, b):
     # Note: Displacements are in 0.1mm units. If number is greater than 128, then it represents
     # a negative distance calculated by subtracting the number from 256 and multiplying by 0.1mm
 
-    stitch_pos_x = []  # create array for x position data
-    stitch_pos_y = []  # create array for y position data
+    pos_x = []  # create array for x position data
+    pos_y = []  # create array for y position data
     for i in range(-a, a):
         y_pos = int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
         x_pos = i
-        stitch_pos_x += [x_pos]  # add x position data for top of ellipse
-        stitch_pos_y += [y_pos]  # add y position data for top of ellipse
+        pos_x += [x_pos]  # add x position data
+        pos_x += [x_pos]  # add same x position data again (stitch top to bottom)
+        pos_y += [y_pos]  # add y position data for top of ellipse
+        pos_y += [-y_pos]  # add y position data for bottom of ellipse
 
-    for i in range(a, -a, -1):
-        y_pos = -int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
-        x_pos = i
-        stitch_pos_x += [x_pos]  # add x position data for top of ellipse
-        stitch_pos_y += [y_pos]  # add y position data for top of ellipse
-
-    for i in range(1, int(len(stitch_pos_x) / 2)):
-        x_disp = stitch_pos_x[i] - stitch_pos_x[i - 1]
-        y_disp = stitch_pos_y[i] - stitch_pos_y[i - 1]
+    for i in range(1, int(len(pos_x) / 2)):
+        x_disp = pos_x[i] - pos_x[i - 1]
+        y_disp = pos_y[i] - pos_y[i - 1]
         if y_disp < 0:
             y_disp = 256 + y_disp
-        x_disp = int(x_disp)
         if x_disp < 0:
             x_disp = 256 + x_disp
         stitches += [x_disp, y_disp]
@@ -101,12 +94,11 @@ def getEllipse(a, b):
     # Change thread
     stitches += [128, 1]  # 128 = escape_character -> 1 = Change to next thread in list
 
-    for i in range(int(len(stitch_pos_x) / 2), len(stitch_pos_x)):
-        x_disp = stitch_pos_x[i] - stitch_pos_x[i - 1]
-        y_disp = stitch_pos_y[i] - stitch_pos_y[i - 1]
+    for i in range(int(len(pos_x) / 2), len(pos_x)):
+        x_disp = pos_x[i] - pos_x[i - 1]
+        y_disp = pos_y[i] - pos_y[i - 1]
         if y_disp < 0:
             y_disp = 256 + y_disp
-        x_disp = int(x_disp)
         if x_disp < 0:
             x_disp = 256 + x_disp
         stitches += [x_disp, y_disp]
