@@ -65,7 +65,7 @@ def getCircle():
     return stitches
 
 
-def getEllipse(a, b):
+def getEllipse(a, b, theta):
     stitches = [128, 2]  # 128 = escape_character , 2=Move
     stitches += [0, 0]  # followed by 8 bit displacement X,Y
     stitches += [206, 206]
@@ -82,11 +82,23 @@ def getEllipse(a, b):
         pos_y += [y_pos]  # add y position data for top of ellipse
         pos_y += [-y_pos]  # add y position data for bottom of ellipse
 
-    for i in range(1, int(len(pos_x) / 2)):
-        x_disp = pos_x[i] - pos_x[i - 1]
-        y_disp = pos_y[i] - pos_y[i - 1]
+    # rotate position data by multiplying by a rotation matrix
+    rot_x = []
+    rot_y = []
+    for i in range(len(pos_x)):
+        x1 = pos_x[i] * math.cos(theta) - pos_y[i] * math.sin(theta)
+        y1 = pos_x[i] * math.sin(theta) + pos_y[i] * math.cos(theta)
+        rot_x += [x1]
+        rot_y += [y1]
+
+    # translate position data to displacement data
+    for i in range(1, int(len(rot_x) / 2)):
+        x_disp = rot_x[i] - rot_x[i - 1]
+        y_disp = rot_y[i] - rot_y[i - 1]
+        y_disp = int(y_disp)
         if y_disp < 0:
             y_disp = 256 + y_disp
+        x_disp = int(x_disp)
         if x_disp < 0:
             x_disp = 256 + x_disp
         stitches += [x_disp, y_disp]
@@ -94,11 +106,98 @@ def getEllipse(a, b):
     # Change thread
     stitches += [128, 1]  # 128 = escape_character -> 1 = Change to next thread in list
 
-    for i in range(int(len(pos_x) / 2), len(pos_x)):
-        x_disp = pos_x[i] - pos_x[i - 1]
-        y_disp = pos_y[i] - pos_y[i - 1]
+    for i in range(int(len(rot_x) / 2), len(rot_x)):
+        x_disp = rot_x[i] - rot_x[i - 1]
+        y_disp = rot_y[i] - rot_y[i - 1]
+        y_disp = int(y_disp)
         if y_disp < 0:
             y_disp = 256 + y_disp
+        x_disp = int(x_disp)
+        if x_disp < 0:
+            x_disp = 256 + x_disp
+        stitches += [x_disp, y_disp]
+
+    stitches += [128, 16]  # 128 = escape_character , 16=last_stitch
+    return stitches
+
+def manyEllipses():
+    stitches = [128, 2]  # 128 = escape_character , 2=Move
+    stitches += [0, 0]  # followed by 8 bit displacement X,Y
+    stitches += [206, 206]
+    # Note: Displacements are in 0.1mm units. If number is greater than 128, then it represents
+    # a negative distance calculated by subtracting the number from 256 and multiplying by 0.1mm
+
+    #define width, height and angle of ellipse 1
+    a = 60
+    b = 20
+    theta = 10
+
+    pos_x = []  # create array for x position data
+    pos_y = []  # create array for y position data
+    for i in range(-a, a, 2):
+        y_pos = int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
+        x_pos = i
+        pos_x += [x_pos]  # add x position data
+        pos_x += [x_pos]  # add same x position data again (stitch top to bottom)
+        pos_y += [y_pos]  # add y position data for top of ellipse
+        pos_y += [-y_pos]  # add y position data for bottom of ellipse
+
+    # rotate position data by multiplying by a rotation matrix
+    rot_x = []
+    rot_y = []
+    for i in range(len(pos_x)):
+        x1 = pos_x[i] * math.cos(theta) - pos_y[i] * math.sin(theta)
+        y1 = pos_x[i] * math.sin(theta) + pos_y[i] * math.cos(theta)
+        rot_x += [x1]
+        rot_y += [y1]
+
+    # translate position data to displacement data
+    for i in range(1, int(len(rot_x))):
+        x_disp = rot_x[i] - rot_x[i - 1]
+        y_disp = rot_y[i] - rot_y[i - 1]
+        y_disp = int(y_disp)
+        if y_disp < 0:
+            y_disp = 256 + y_disp
+        x_disp = int(x_disp)
+        if x_disp < 0:
+            x_disp = 256 + x_disp
+        stitches += [x_disp, y_disp]
+
+    # Change thread
+    stitches += [128, 1]  # 128 = escape_character -> 1 = Change to next thread in list
+
+    # define width, height and angle of ellipse 2
+    a = 70
+    b = 30
+    theta = 40
+
+    pos_x = []  # create array for x position data
+    pos_y = []  # create array for y position data
+    for i in range(-a, a, 2):
+        y_pos = int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
+        x_pos = i
+        pos_x += [x_pos]  # add x position data
+        pos_x += [x_pos]  # add same x position data again (stitch top to bottom)
+        pos_y += [y_pos]  # add y position data for top of ellipse
+        pos_y += [-y_pos]  # add y position data for bottom of ellipse
+
+    # rotate position data by multiplying by a rotation matrix
+    rot_x = []
+    rot_y = []
+    for i in range(len(pos_x)):
+        x1 = pos_x[i] * math.cos(theta) - pos_y[i] * math.sin(theta)
+        y1 = pos_x[i] * math.sin(theta) + pos_y[i] * math.cos(theta)
+        rot_x += [x1]
+        rot_y += [y1]
+
+    # translate position data to displacement data
+    for i in range(1, int(len(rot_x))):
+        x_disp = rot_x[i] - rot_x[i - 1]
+        y_disp = rot_y[i] - rot_y[i - 1]
+        y_disp = int(y_disp)
+        if y_disp < 0:
+            y_disp = 256 + y_disp
+        x_disp = int(x_disp)
         if x_disp < 0:
             x_disp = 256 + x_disp
         stitches += [x_disp, y_disp]
@@ -166,13 +265,13 @@ def getJefHeader(num_stitches):
     return jefBytes
 
 
-# Main program combines headers and stich sequence
+# Main program combines headers and stitch sequence
 
 def main():
-    stitchseq = getEllipse(60, 20)
+    stitchseq = manyEllipses()
     header = getJefHeader(len(stitchseq) // 2)
     data = bytes(header) + bytes(stitchseq)
-    with open("ellipse.jef", "wb") as f:
+    with open("manyellipses.jef", "wb") as f:
         f.write(data)
 
 
