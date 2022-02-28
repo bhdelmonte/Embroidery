@@ -74,7 +74,7 @@ def getEllipse(a, b):
 
     pos_x = []  # create array for x position data
     pos_y = []  # create array for y position data
-    for i in range(-a, a):
+    for i in range(-a, a, 2):
         y_pos = int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
         x_pos = i
         pos_x += [x_pos]  # add x position data
@@ -169,7 +169,7 @@ def getJefHeader(num_stitches):
 # Main program combines headers and stich sequence
 
 def main():
-    stitchseq = getEllipse(20, 30)
+    stitchseq = getEllipse(60, 20)
     header = getJefHeader(len(stitchseq) // 2)
     data = bytes(header) + bytes(stitchseq)
     with open("ellipse.jef", "wb") as f:
