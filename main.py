@@ -1,6 +1,5 @@
 import math
 
-
 # Function to create square stitch sequence
 def getSquare():
     stitches = [128, 2]  # 128 = escape_character , 2=Move
@@ -120,87 +119,75 @@ def getEllipse(a, b, theta):
     stitches += [128, 16]  # 128 = escape_character , 16=last_stitch
     return stitches
 
-def manyEllipses():
+def getFern():
     stitches = [128, 2]  # 128 = escape_character , 2=Move
     stitches += [0, 0]  # followed by 8 bit displacement X,Y
-    stitches += [206, 206]
     # Note: Displacements are in 0.1mm units. If number is greater than 128, then it represents
     # a negative distance calculated by subtracting the number from 256 and multiplying by 0.1mm
 
-    #define width, height and angle of ellipse 1
-    a = 60
-    b = 20
-    theta = 10
+    def leaf(x, y, a, b, theta):
+        leaves = [] # create array for displacement data that will be added to stitches array
+        pos_x = []  # create array for x position data
+        pos_y = []  # create array for y position data
+        x_pos = x # starting position
+        y_pos = y # starting position
 
-    pos_x = []  # create array for x position data
-    pos_y = []  # create array for y position data
-    for i in range(-a, a, 2):
-        y_pos = int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
-        x_pos = i
-        pos_x += [x_pos]  # add x position data
-        pos_x += [x_pos]  # add same x position data again (stitch top to bottom)
-        pos_y += [y_pos]  # add y position data for top of ellipse
-        pos_y += [-y_pos]  # add y position data for bottom of ellipse
+        #fill in leaf
+        for i in range(-a, a, 2):
+            y_pos = y + int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
+            x_pos = x + i
+            pos_x += [x_pos]  # add x position data
+            pos_x += [x_pos]  # add same x position data again (stitch top to bottom)
+            pos_y += [y_pos]  # add y position data for top of ellipse
+            pos_y += [-y_pos]  # add y position data for bottom of ellipse
 
-    # rotate position data by multiplying by a rotation matrix
-    rot_x = []
-    rot_y = []
-    for i in range(len(pos_x)):
-        x1 = pos_x[i] * math.cos(theta) - pos_y[i] * math.sin(theta)
-        y1 = pos_x[i] * math.sin(theta) + pos_y[i] * math.cos(theta)
-        rot_x += [x1]
-        rot_y += [y1]
+        #return to starting position and draw leaf center line
+        end_x = x_pos
+        end_y = y_pos
+        center_x = []
+        center_y = []
+        leaf_length = math.sqrt((end_x - x)**2 + (end_y - y)**2)
+        for i in range(0, int(leaf_length), 2):
+            x_pos = (leaf_length - i) * math.cos(theta)
+            y_pos = (leaf_length - i) * math.sin(theta)
+            center_x += [x_pos]
+            center_y += [y_pos]
+        pos_x += center_x
+        pos_y += center_y
 
-    # translate position data to displacement data
-    for i in range(1, int(len(rot_x))):
-        x_disp = rot_x[i] - rot_x[i - 1]
-        y_disp = rot_y[i] - rot_y[i - 1]
-        y_disp = int(y_disp)
-        if y_disp < 0:
-            y_disp = 256 + y_disp
-        x_disp = int(x_disp)
-        if x_disp < 0:
-            x_disp = 256 + x_disp
-        stitches += [x_disp, y_disp]
+        # rotate position data by multiplying by a rotation matrix
+        rot_x = []
+        rot_y = []
+        for i in range(len(pos_x)):
+            x1 = pos_x[i] * math.cos(theta) - pos_y[i] * math.sin(theta)
+            y1 = pos_x[i] * math.sin(theta) + pos_y[i] * math.cos(theta)
+            rot_x += [x1]
+            rot_y += [y1]
+
+        # translate position data to displacement data
+        for i in range(1, int(len(rot_x))):
+            x_disp = rot_x[i] - rot_x[i - 1]
+            y_disp = rot_y[i] - rot_y[i - 1]
+            y_disp = int(y_disp)
+            if y_disp < 0:
+                y_disp = 256 + y_disp
+            x_disp = int(x_disp)
+            if x_disp < 0:
+                x_disp = 256 + x_disp
+            leaves += [x_disp, y_disp]
+
+        return leaves
+
+    # define width, height and angle of leaf 1
+    leaf1 = leaf(0, 0, 60, 20, 30)
+    stitches += leaf1
 
     # Change thread
     stitches += [128, 1]  # 128 = escape_character -> 1 = Change to next thread in list
 
-    # define width, height and angle of ellipse 2
-    a = 70
-    b = 30
-    theta = 40
-
-    pos_x = []  # create array for x position data
-    pos_y = []  # create array for y position data
-    for i in range(-a, a, 2):
-        y_pos = int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
-        x_pos = i
-        pos_x += [x_pos]  # add x position data
-        pos_x += [x_pos]  # add same x position data again (stitch top to bottom)
-        pos_y += [y_pos]  # add y position data for top of ellipse
-        pos_y += [-y_pos]  # add y position data for bottom of ellipse
-
-    # rotate position data by multiplying by a rotation matrix
-    rot_x = []
-    rot_y = []
-    for i in range(len(pos_x)):
-        x1 = pos_x[i] * math.cos(theta) - pos_y[i] * math.sin(theta)
-        y1 = pos_x[i] * math.sin(theta) + pos_y[i] * math.cos(theta)
-        rot_x += [x1]
-        rot_y += [y1]
-
-    # translate position data to displacement data
-    for i in range(1, int(len(rot_x))):
-        x_disp = rot_x[i] - rot_x[i - 1]
-        y_disp = rot_y[i] - rot_y[i - 1]
-        y_disp = int(y_disp)
-        if y_disp < 0:
-            y_disp = 256 + y_disp
-        x_disp = int(x_disp)
-        if x_disp < 0:
-            x_disp = 256 + x_disp
-        stitches += [x_disp, y_disp]
+    # define width, height and angle of leaf 2
+    leaf2 = leaf(0, 0, 60, 20, 10)
+    stitches += leaf2
 
     stitches += [128, 16]  # 128 = escape_character , 16=last_stitch
     return stitches
@@ -220,9 +207,81 @@ def test():
     stitches += [128, 16]  # 128 = escape_character , 16=last_stitch
     return stitches
 
+def stem():
+    stitches = [128, 2]  # 128 = escape_character , 2=Move
+    stitches += [0, 0]  # followed by 8 bit displacement X,Y
+    # Note: Displacements are in 0.1mm units. If number is greater than 128, then it represents
+    # a negative distance calculated by subtracting the number from 256 and multiplying by 0.1mm
+
+    pos_x = []
+    pos_y = []
+    x = 0
+    y = 0
+    length = 100
+    stem_theta = 10
+    branch_theta = 30
+    # define stem length that reduces each iteration
+    for i in range (length, 0, -10):
+        # main stem
+        start_x = x
+        start_y = y
+        for j in range (0, i+1, 10):
+            x = start_x + j * math.cos(math.radians(stem_theta))
+            y = start_y + j * math.sin(math.radians(stem_theta))
+            pos_x += [x]
+            pos_y += [y]
+        # left branch
+        start_x = x
+        start_y = y
+        for j in range (0, i+1, 10):
+            x = start_x + j * math.cos(math.radians(stem_theta + branch_theta))
+            y = start_y + j * math.sin(math.radians(stem_theta + branch_theta))
+            pos_x += [x]
+            pos_y += [y]
+        # back along left branch to center
+        for j in range (i+1, 0, -10):
+            x = start_x + j * math.cos(math.radians(stem_theta + branch_theta))
+            y = start_y + j * math.sin(math.radians(stem_theta + branch_theta))
+            pos_x += [x]
+            pos_y += [y]
+        #main stem continued
+        for j in range (0, i+1, 10):
+            x = start_x + j * math.cos(math.radians(stem_theta))
+            y = start_y + j * math.sin(math.radians(stem_theta))
+            pos_x += [x]
+            pos_y += [y]
+        # right branch
+        start_x = x
+        start_y = y
+        for j in range (0, i+1, 10):
+            x = start_x + j * math.cos(math.radians(stem_theta - branch_theta))
+            y = start_y + j * math.sin(math.radians(stem_theta - branch_theta))
+            pos_x += [x]
+            pos_y += [y]
+        # back along left branch to center
+        for j in range (i+1, 0, -10):
+            x = start_x + j * math.cos(math.radians(stem_theta - branch_theta))
+            y = start_y + j * math.sin(math.radians(stem_theta - branch_theta))
+            pos_x += [x]
+            pos_y += [y]
+
+    # convert position to displacement
+    for i in range(1, len(pos_x)):
+        x_disp = pos_x[i] - pos_x[i - 1]
+        y_disp = pos_y[i] - pos_y[i - 1]
+        y_disp = round(y_disp)
+        if y_disp < 0:
+            y_disp = 256 + y_disp
+        x_disp = round(x_disp)
+        if x_disp < 0:
+            x_disp = 256 + x_disp
+        stitches += [x_disp, y_disp]
+
+    stitches += [128, 16]  # 128 = escape_character , 16=last_stitch
+    return stitches
+
 
 # Function to create JEF file header
-
 def getJefHeader(num_stitches):
     jefBytes = [128, 0, 0, 0,  # The byte offset of the first stitch
                 10, 0, 0, 0,  # unknown command
@@ -268,10 +327,10 @@ def getJefHeader(num_stitches):
 # Main program combines headers and stitch sequence
 
 def main():
-    stitchseq = manyEllipses()
+    stitchseq = getFern()
     header = getJefHeader(len(stitchseq) // 2)
     data = bytes(header) + bytes(stitchseq)
-    with open("manyellipses.jef", "wb") as f:
+    with open("fern.jef", "wb") as f:
         f.write(data)
 
 
