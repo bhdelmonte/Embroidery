@@ -174,13 +174,13 @@ def getFern():
         return leaves
 
     # define width, height and angle of leaf 1
-    leaf1 = leaf(0, 0, 60, 20, 0)
-    stitches += leaf1
+    #leaf1 = leaf(0, 0, 60, 20, 0)
+    #stitches += leaf1
 
     # Change thread
-    stitches += [128, 1]  # 128 = escape_character -> 1 = Change to next thread in list
+    #stitches += [128, 1]  # 128 = escape_character -> 1 = Change to next thread in list
 
-    for i in range (0, 60, 30):
+    for i in range (0, 120, 30):
         # define width, height and angle of leaf 2
         new_leaf = leaf(0, 0, 60, 20, i)
         stitches += new_leaf
@@ -336,7 +336,7 @@ def getJefHeader(num_stitches):
                 ord("0"), ord("2"), ord("2"), ord("4"),  # MMDD
                 ord("1"), ord("5"), ord("2"), ord("1"),  # HHMM
                 ord("0"), ord("0"), 99, 0,  # SS00
-                2, 0, 0, 0,  # Thread count nr. (nr of thread changes)
+                1, 0, 0, 0,  # Thread count nr. (nr of thread changes)
                 (num_stitches) & 0xff, (num_stitches) >> 8 & 0xff, 0, 0,  # Number of stitches
                 3, 0, 0, 0,  # Sewing machine Hoop
                 # Extent 1
@@ -374,10 +374,10 @@ def getJefHeader(num_stitches):
 # Main program combines headers and stitch sequence
 
 def main():
-    stitchseq = stem()
+    stitchseq = getFern()
     header = getJefHeader(len(stitchseq) // 2)
     data = bytes(header) + bytes(stitchseq)
-    with open("stem.jef", "wb") as f:
+    with open("fern.jef", "wb") as f:
         f.write(data)
 
 
