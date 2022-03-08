@@ -123,21 +123,23 @@ def leaf(x, y, a, b, theta):
     pos_x = []  # create array for x position data
     pos_y = []  # create array for y position data
     x_pos = x # starting position
-    y_pos = y # starting position
+    y_top = y # starting position
+    y_bottom = y
 
     # fill in leaf
     for i in range(-a, a, 2):
-        y_pos = y + int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
-        x_pos = x + i
+        y_top = y + int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
+        y_bottom = y - int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
+        x_pos = x + a + i
         pos_x += [x_pos]  # add x position data
         pos_x += [x_pos]  # add same x position data again (stitch top to bottom)
-        pos_y += [y_pos]  # add y position data for top of ellipse
-        pos_y += [-y_pos]  # add y position data for bottom of ellipse
+        pos_y += [y_top]  # add y position data for top of ellipse
+        pos_y += [y_bottom]  # add y position data for bottom of ellipse
 
     # return to starting position and draw leaf center line
     end_x = x_pos
-    end_y = (y_pos - y_pos)/2
-    for i in range(end_x + x, -end_x + x -20, -10):
+    end_y = (y_top + y_bottom)/2
+    for i in range(2 * a + x, x - 20, -10):
         x_pos = i
         y_pos = end_y
         pos_x += [round(x_pos)]
@@ -147,8 +149,8 @@ def leaf(x, y, a, b, theta):
     rot_x = []
     rot_y = []
     for i in range(0, len(pos_x)-1):
-        x1 = pos_x[i] * round(math.cos(math.radians(theta))) - pos_y[i] * round(math.sin(math.radians(theta)))
-        y1 = pos_x[i] * round(math.sin(math.radians(theta))) + pos_y[i] * round(math.cos(math.radians(theta)))
+        y1 = round(pos_x[i] * math.cos(math.radians(theta)) - pos_y[i] * math.sin(math.radians(theta))) #switched x and y
+        x1 =round(pos_x[i] * math.sin(math.radians(theta)) + pos_y[i] * math.cos(math.radians(theta)))  #switched x and y
         rot_x += [x1]
         rot_y += [y1]
 
@@ -180,7 +182,7 @@ def stem(length, stem_theta):
             pos_x += [x]
             pos_y += [y]
         # left leaf
-        leaf_x, leaf_y = leaf(round(x), round(y), 120, 40, stem_theta + branch_theta)
+        leaf_x, leaf_y = leaf(round(x), round(y), 60, 20, stem_theta + branch_theta)
         pos_x += leaf_x
         pos_y += leaf_y
         # back along left branch to center
@@ -203,6 +205,10 @@ def stem(length, stem_theta):
             y = start_y + j * math.sin(math.radians(stem_theta - branch_theta))
             pos_x += [x]
             pos_y += [y]
+        # right leaf
+        leaf_x, leaf_y = leaf(round(x), round(y), 60, 20, stem_theta - branch_theta)
+        pos_x += leaf_x
+        pos_y += leaf_y
         # back along right branch to center
         for j in range (i+1, 0, -10):
             x = start_x + j * math.cos(math.radians(stem_theta - branch_theta))
@@ -210,8 +216,8 @@ def stem(length, stem_theta):
             pos_x += [x]
             pos_y += [y]
     #get back to start of stem
-    end_x = pos_x[-1]
-    end_y = pos_y[-1]
+    end_x = x
+    end_y = y
     length = round(math.sqrt(end_x**2 + end_y**2))
     for i in range(length, 0, -10):
         x_pos = i * math.cos(math.radians(stem_theta))
@@ -228,25 +234,24 @@ def getShape():
     # a negative distance calculated by subtracting the number from 256 and multiplying by 0.1mm
 
     theta = 0
-    angle = 25
+    spiral_theta = 25
     x_pos = 0
     y_pos = 0
     pos_x = []  # create array for x position data
     pos_y = []  # create array for y position data
-    r = 20
+    spiral_length = 20
     cut = 5
 
-    r = 16 * angle
-    for tt in range(0, angle):
-        t = angle - tt
-        th = t / 8
-        y_pos = r * math.sin(th)
-        x_pos = r * math.cos(th)
+    spiral_length = 16 * spiral_theta
+    for i in range(0, spiral_theta):
+        bend_angle = (spiral_theta - i) / 8
+        y_pos = spiral_length * math.sin(bend_angle)
+        x_pos = spiral_length * math.cos(bend_angle)
         pos_x += [x_pos]  # add x position data
         pos_y += [y_pos]  # add y position data for top of ellipse
-        r = r - 16
+        spiral_length -= 16
 
-        if tt == 5:
+        if i == 5:
             #branchx, branchy = stem(90, 90)
             #pos_x = pos_x + branchx
             #pos_y = pos_y + branchy
@@ -293,15 +298,28 @@ def test():
     # Note: Displacements are in 0.1mm units. If number is greater than 128, then it represents
     # a negative distance calculated by subtracting the number from 256 and multiplying by 0.1mm
 
-    x_pos = 0
-    y_pos = 0
+    x_pos = 500
+    y_pos = 500
     pos_x = []  # create array for x position data
     pos_y = []  # create array for y position data
 
-    #create leaf
-    leaf_x, leaf_y = leaf(round(x_pos), round(y_pos), 60, 20, 60)
+
+    #create stem
+    stem_x, stem_y = stem(120, 10)
+    pos_x += stem_x
+    pos_y += stem_y
+
+    """
+    #create leaf left
+    leaf_x, leaf_y = leaf(50, 50, 60, 20, 30)
     pos_x += leaf_x
     pos_y += leaf_y
+
+    #create leaf right
+    leaf_x, leaf_y = leaf(50, 50, 60, 20, -30)
+    pos_x += leaf_x
+    pos_y += leaf_y
+    """
 
     # convert position to displacement
     for i in range(1, len(pos_x)):
