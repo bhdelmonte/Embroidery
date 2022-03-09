@@ -122,15 +122,15 @@ def getEllipse(a, b, theta):
 def leaf(x, y, a, b, theta):
     pos_x = []  # create array for x position data
     pos_y = []  # create array for y position data
-    x_pos = x # starting position
-    y_top = y # starting position
-    y_bottom = y
+    x_pos = 0 # starting position
+    y_top = 0 # starting position
+    y_bottom = 0
 
-    # fill in leaf
+    # fill in leaf at origin
     for i in range(-a, a, 2):
-        y_top = y + int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
-        y_bottom = y - int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
-        x_pos = x + a + i
+        y_top = int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
+        y_bottom = -int(math.sqrt((-b ** 2 / a ** 2) * i ** 2 + b ** 2))
+        x_pos = a + i
         pos_x += [x_pos]  # add x position data
         pos_x += [x_pos]  # add same x position data again (stitch top to bottom)
         pos_y += [y_top]  # add y position data for top of ellipse
@@ -139,7 +139,7 @@ def leaf(x, y, a, b, theta):
     # return to starting position and draw leaf center line
     end_x = x_pos
     end_y = (y_top + y_bottom)/2
-    for i in range(2 * a + x, x - 20, -10):
+    for i in range(2 * a, -20, -10):
         x_pos = i
         y_pos = end_y
         pos_x += [round(x_pos)]
@@ -149,70 +149,81 @@ def leaf(x, y, a, b, theta):
     rot_x = []
     rot_y = []
     for i in range(0, len(pos_x)-1):
-        x1 = round(pos_x[i] * math.cos(math.radians(theta)) - pos_y[i] * math.sin(math.radians(theta))) #changed formula
-        y1 = round(pos_x[i] * math.sin(math.radians(theta)) + pos_y[i] * math.cos(math.radians(theta)))  #changed formula
+        x1 = round(pos_x[i] * math.cos(theta) - pos_y[i] * math.sin(theta))
+        y1 = round(pos_x[i] * math.sin(theta) + pos_y[i] * math.cos(theta))
         rot_x += [x1]
         rot_y += [y1]
 
-    return rot_x, rot_y
+    # translate leaf to given starting position
+    trans_x = []
+    trans_y = []
+    for i in range(len(rot_x)):
+        x1 = rot_x[i] + x
+        y1 = rot_y[i] + y
+        trans_x += [x1]
+        trans_y += [y1]
 
-def stem(length, stem_theta):
+    return trans_x, trans_y
+
+def stem(x, y, length, stem_theta):
 
     pos_x = []
     pos_y = []
+    move_x = x
+    move_y = y
     x = 0
     y = 0
-    branch_theta = 30
+    branch_theta = 0.5
     # define stem length that reduces each iteration
     for i in range (length, 30, -20):
         # main stem
         start_x = x
         start_y = y
         for j in range (0, i+1, 10):
-            x = start_x + j * math.cos(math.radians(stem_theta))
-            y = start_y + j * math.sin(math.radians(stem_theta))
+            x = start_x + j * math.cos(stem_theta)
+            y = start_y + j * math.sin(stem_theta)
             pos_x += [x]
             pos_y += [y]
         # left branch
         start_x = x
         start_y = y
         for j in range (0, i+1, 10):
-            x = start_x + j * math.cos(math.radians(stem_theta + branch_theta))
-            y = start_y + j * math.sin(math.radians(stem_theta + branch_theta))
+            x = start_x + j * math.cos(stem_theta + branch_theta)
+            y = start_y + j * math.sin(stem_theta + branch_theta)
             pos_x += [x]
             pos_y += [y]
         # left leaf
-        leaf_x, leaf_y = leaf(round(x), round(y), 60, 20, stem_theta + branch_theta)
+        leaf_x, leaf_y = leaf(round(x), round(y), round(3*i/4), round(i/4), stem_theta + branch_theta)
         pos_x += leaf_x
         pos_y += leaf_y
         # back along left branch to center
         for j in range (i+1, 0, -10):
-            x = start_x + j * math.cos(math.radians(stem_theta + branch_theta))
-            y = start_y + j * math.sin(math.radians(stem_theta + branch_theta))
+            x = start_x + j * math.cos(stem_theta + branch_theta)
+            y = start_y + j * math.sin(stem_theta + branch_theta)
             pos_x += [x]
             pos_y += [y]
         #main stem continued
         for j in range (0, i+1, 10):
-            x = start_x + j * math.cos(math.radians(stem_theta))
-            y = start_y + j * math.sin(math.radians(stem_theta))
+            x = start_x + j * math.cos(stem_theta)
+            y = start_y + j * math.sin(stem_theta)
             pos_x += [x]
             pos_y += [y]
         # right branch
         start_x = x
         start_y = y
         for j in range (0, i, 10):
-            x = start_x + j * math.cos(math.radians(stem_theta - branch_theta))
-            y = start_y + j * math.sin(math.radians(stem_theta - branch_theta))
+            x = start_x + j * math.cos(stem_theta - branch_theta)
+            y = start_y + j * math.sin(stem_theta - branch_theta)
             pos_x += [x]
             pos_y += [y]
         # right leaf
-        leaf_x, leaf_y = leaf(round(x), round(y), 60, 20, stem_theta - branch_theta)
+        leaf_x, leaf_y = leaf(round(x), round(y), round(3*i/4), round(i/4), stem_theta - branch_theta)
         pos_x += leaf_x
         pos_y += leaf_y
         # back along right branch to center
         for j in range (i+1, 0, -10):
-            x = start_x + j * math.cos(math.radians(stem_theta - branch_theta))
-            y = start_y + j * math.sin(math.radians(stem_theta - branch_theta))
+            x = start_x + j * math.cos(stem_theta - branch_theta)
+            y = start_y + j * math.sin(stem_theta - branch_theta)
             pos_x += [x]
             pos_y += [y]
     #get back to start of stem
@@ -220,53 +231,44 @@ def stem(length, stem_theta):
     end_y = y
     length = round(math.sqrt(end_x**2 + end_y**2))
     for i in range(length, 0, -10):
-        x_pos = i * math.cos(math.radians(stem_theta))
-        y_pos = i * math.sin(math.radians(stem_theta))
+        x_pos = i * math.cos(stem_theta)
+        y_pos = i * math.sin(stem_theta)
         pos_x += [x_pos]
         pos_y += [y_pos]
 
-    return pos_x, pos_y
+    # translate stem to given starting position
+    trans_x = []
+    trans_y = []
+    for i in range(len(pos_x)):
+        x1 = pos_x[i] + move_x
+        y1 = pos_y[i] + move_y
+        trans_x += [x1]
+        trans_y += [y1]
 
-def getShape():
+    return trans_x, trans_y
+
+def wreath():
     stitches = [128, 2]  # 128 = escape_character , 2=Move
     stitches += [0, 0]  # followed by 8 bit displacement X,Y
     # Note: Displacements are in 0.1mm units. If number is greater than 128, then it represents
     # a negative distance calculated by subtracting the number from 256 and multiplying by 0.1mm
 
-    theta = 0
-    spiral_theta = 25
-    x_pos = 0
-    y_pos = 0
+    spiral_length = 29
     pos_x = []  # create array for x position data
     pos_y = []  # create array for y position data
-    spiral_length = 20
-    cut = 5
 
-    spiral_length = 16 * spiral_theta
-    for i in range(0, spiral_theta):
-        bend_angle = (spiral_theta - i) / 8
-        y_pos = spiral_length * math.sin(bend_angle)
-        x_pos = spiral_length * math.cos(bend_angle)
+    for i in range(spiral_length * 4, 0, -1):
+        bend_angle = i / 32
+        y_pos = 4 * i * math.sin(bend_angle)
+        x_pos = 4 * i * math.cos(bend_angle)
         pos_x += [x_pos]  # add x position data
-        pos_y += [y_pos]  # add y position data for top of ellipse
-        spiral_length -= 16
+        pos_y += [y_pos]  # add y position data
+        if i % 20 == 0:
+            stem_theta = math.atan((pos_y[-1] - pos_y[-2])/(pos_x[-1] - pos_x[-2]))
+            branchx, branchy = stem(round(x_pos), round(y_pos), i, stem_theta)
+            pos_x += branchx
+            pos_y += branchy
 
-        if i == 5:
-            #branchx, branchy = stem(90, 90)
-            #pos_x = pos_x + branchx
-            #pos_y = pos_y + branchy
-            leaf_x, leaf_y = leaf(round(x_pos), round(y_pos), 60, 20, 0)
-            pos_x += leaf_x
-            pos_y += leaf_y
-    """
-    rot_x = []
-    rot_y = []
-    for i in range(len(pos_x)):
-        x1 = pos_x[i] * math.cos(theta) - pos_y[i] * math.sin(theta)
-        y1 = pos_x[i] * math.sin(theta) + pos_y[i] * math.cos(theta)
-        rot_x += [x1]
-        rot_y += [y1]
-    """
 
     # convert position to displacement
     for i in range(1, len(pos_x)):
@@ -303,13 +305,21 @@ def test():
     pos_x = []  # create array for x position data
     pos_y = []  # create array for y position data
 
+    #create spiral
+    spiral_length = 29
+    for i in range(spiral_length * 4, 0, -2):
+        bend_angle = i / 32
+        y_pos = 4 * i * math.sin(bend_angle)
+        x_pos = 4 * i * math.cos(bend_angle)
+        pos_x += [x_pos]  # add x position data
+        pos_y += [y_pos]  # add y position data
+
     """
     #create stem
-    stem_x, stem_y = stem(120, 10)
+    stem_x, stem_y = stem(90, 90, 120, 10)
     pos_x += stem_x
     pos_y += stem_y
-    """
-
+    
     #create leaf left
     leaf_x, leaf_y = leaf(50, 50, 60, 20, 30)
     pos_x += leaf_x
@@ -319,7 +329,7 @@ def test():
     leaf_x, leaf_y = leaf(50, 50, 60, 20, 120)
     pos_x += leaf_x
     pos_y += leaf_y
-
+    """
 
     # convert position to displacement
     for i in range(1, len(pos_x)):
@@ -392,10 +402,10 @@ def getJefHeader(num_stitches):
 # Main program combines headers and stitch sequence
 
 def main():
-    stitchseq = test()
+    stitchseq = wreath()
     header = getJefHeader(len(stitchseq) // 2)
     data = bytes(header) + bytes(stitchseq)
-    with open("test.jef", "wb") as f:
+    with open("wreath.jef", "wb") as f:
         f.write(data)
 
 
