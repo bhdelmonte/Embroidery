@@ -149,8 +149,8 @@ def leaf(x, y, a, b, theta):
     rot_x = []
     rot_y = []
     for i in range(0, len(pos_x)-1):
-        y1 = round(pos_x[i] * math.cos(math.radians(theta)) - pos_y[i] * math.sin(math.radians(theta))) #switched x and y
-        x1 =round(pos_x[i] * math.sin(math.radians(theta)) + pos_y[i] * math.cos(math.radians(theta)))  #switched x and y
+        x1 = round(pos_x[i] * math.cos(math.radians(theta)) - pos_y[i] * math.sin(math.radians(theta))) #changed formula
+        y1 = round(pos_x[i] * math.sin(math.radians(theta)) + pos_y[i] * math.cos(math.radians(theta)))  #changed formula
         rot_x += [x1]
         rot_y += [y1]
 
@@ -303,23 +303,23 @@ def test():
     pos_x = []  # create array for x position data
     pos_y = []  # create array for y position data
 
-
+    """
     #create stem
     stem_x, stem_y = stem(120, 10)
     pos_x += stem_x
     pos_y += stem_y
-
     """
+
     #create leaf left
     leaf_x, leaf_y = leaf(50, 50, 60, 20, 30)
     pos_x += leaf_x
     pos_y += leaf_y
 
     #create leaf right
-    leaf_x, leaf_y = leaf(50, 50, 60, 20, -30)
+    leaf_x, leaf_y = leaf(50, 50, 60, 20, 120)
     pos_x += leaf_x
     pos_y += leaf_y
-    """
+
 
     # convert position to displacement
     for i in range(1, len(pos_x)):
