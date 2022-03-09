@@ -247,6 +247,44 @@ def stem(x, y, length, stem_theta):
 
     return trans_x, trans_y
 
+def branch():
+
+    spiral_length = 29
+    pos_x = []  # create array for x position data
+    pos_y = []  # create array for y position data
+    x_pos = 0
+    y_pos = 0
+    pos_x += [x_pos]
+    pos_y += [y_pos]
+
+    for i in range(spiral_length * 4, 0, -1):
+        bend_angle = i / 32
+        y_pos = 4 * i * math.sin(bend_angle)
+        x_pos = 4 * i * math.cos(bend_angle)
+        pos_x += [x_pos]  # add x position data
+        pos_y += [y_pos]  # add y position data
+        # add branch
+        if i % 20 == 0:
+            stem_theta = math.atan((pos_y[-1] - pos_y[-2])/(pos_x[-1] - pos_x[-2]))
+            branchx, branchy = stem(round(x_pos), round(y_pos), i, stem_theta)
+            pos_x += branchx
+            pos_y += branchy
+    end_x = x_pos
+    end_y = y_pos
+
+    #spiral back to start
+    for i in range(0, spiral_length * 4, 1):
+        bend_angle = i / 32
+        y_pos = end_y + 4 * i * math.sin(bend_angle)
+        x_pos = end_x + 4 * i * math.cos(bend_angle)
+        pos_x += [x_pos]  # add x position data
+        pos_y += [y_pos]  # add y position data
+
+    pos_x += [0]
+    pos_y += [0]
+
+    return pos_x, pos_y
+
 def wreath():
     stitches = [128, 2]  # 128 = escape_character , 2=Move
     stitches += [0, 0]  # followed by 8 bit displacement X,Y
@@ -256,24 +294,26 @@ def wreath():
     spiral_length = 29
     pos_x = []  # create array for x position data
     pos_y = []  # create array for y position data
+    x_pos = 0
+    y_pos = 0
 
-    for i in range(spiral_length * 4, 0, -1):
-        bend_angle = i / 32
-        y_pos = 4 * i * math.sin(bend_angle)
-        x_pos = 4 * i * math.cos(bend_angle)
-        pos_x += [x_pos]  # add x position data
-        pos_y += [y_pos]  # add y position data
-        if i % 20 == 0:
-            stem_theta = math.atan((pos_y[-1] - pos_y[-2])/(pos_x[-1] - pos_x[-2]))
-            branchx, branchy = stem(round(x_pos), round(y_pos), i, stem_theta)
-            pos_x += branchx
-            pos_y += branchy
+    # create branches at different angles
+    rot_x = []
+    rot_y = []
+    for i in range (0, 360, 120):
+        pos_x, pos_y = branch()
+        # rotate position data by multiplying by a rotation matrix
 
+        for j in range(0, len(pos_x)-1):
+            x1 = round(pos_x[j] * math.cos(math.radians(i)) - pos_y[j] * math.sin(math.radians(i)))
+            y1 = round(pos_x[j] * math.sin(math.radians(i)) + pos_y[j] * math.cos(math.radians(i)))
+            rot_x += [x1]
+            rot_y += [y1]
 
     # convert position to displacement
-    for i in range(1, len(pos_x)):
-        x_disp = pos_x[i] - pos_x[i - 1]
-        y_disp = pos_y[i] - pos_y[i - 1]
+    for i in range(1, len(rot_x)):
+        x_disp = rot_x[i] - rot_x[i - 1]
+        y_disp = rot_y[i] - rot_y[i - 1]
         y_disp = round(y_disp)
         if y_disp >= 256:
             y_disp = 0
@@ -307,10 +347,22 @@ def test():
 
     #create spiral
     spiral_length = 29
-    for i in range(spiral_length * 4, 0, -2):
+    x_pos = 0
+    y_pos = 0
+    for i in range(spiral_length * 4, 0, -1):
         bend_angle = i / 32
         y_pos = 4 * i * math.sin(bend_angle)
         x_pos = 4 * i * math.cos(bend_angle)
+        pos_x += [x_pos]  # add x position data
+        pos_y += [y_pos]  # add y position data
+
+    end_x = x_pos
+    end_y = y_pos
+    #spiral back to start
+    for i in range(0, spiral_length * 4, 1):
+        bend_angle = i / 32
+        y_pos = end_y + 4 * i * math.sin(bend_angle)
+        x_pos = end_x + 4 * i * math.cos(bend_angle)
         pos_x += [x_pos]  # add x position data
         pos_y += [y_pos]  # add y position data
 
